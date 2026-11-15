@@ -1,0 +1,86 @@
+services:
+  catalog-service:
+    build: ./services/catalog-service
+    environment:
+      SERVICE_NAME: catalog-service
+      PORT: 5000
+      DB_PATH: /data/catalog.db
+    ports: ["5000:5000"]
+    volumes: ["catalog-data:/data"]
+    networks: [app-net]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  reader-service:
+    build: ./services/reader-service
+    environment:
+      SERVICE_NAME: reader-service
+      PORT: 5003
+      DB_PATH: /data/readers.db
+    ports: ["5003:5003"]
+    volumes: ["reader-data:/data"]
+    networks: [app-net]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5003/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  notification-service:
+    build: ./services/notification-service
+    environment:
+      SERVICE_NAME: notification-service
+      PORT: 5002
+      DB_PATH: /data/notifications.db
+    ports: ["5002:5002"]
+    volumes: ["notification-data:/data"]
+    networks: [app-net]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5002/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  loan-service:
+    build: ./services/loan-service
+    environment:
+      SERVICE_NAME: loan-service
+      PORT: 5001
+      DB_PATH: /data/loans.db
+      CATALOG_URL: http://catalog-service:5000
+      READER_URL: http://reader-service:5003
+      NOTIFICATION_URL: http://notification-service:5002
+      LOAN_LIMIT: 3
+      LOAN_DAYS: 14
+    ports: ["5001:5001"]
+    volumes: ["loan-data:/data"]
+    networks: [app-net]
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      reader-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+volumes:
+  catalog-data:
+  reader-data:
+  notification-data:
+  loan-data:
+
+networks:
+  app-net:
+    driver: bridge
