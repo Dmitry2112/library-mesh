@@ -1,0 +1,52 @@
+@catalog = http://localhost:5000
+@reader = http://localhost:5003
+@loan = http://localhost:5001
+@notify = http://localhost:5002
+
+### Здоровье
+GET {{loan}}/health
+
+### Создать читателя
+# @name createReader
+POST {{reader}}/readers
+Content-Type: application/json
+
+{"name": "Анна", "email": "anna+{{$guid}}@example.com"}
+
+### Создать книгу
+# @name createBook
+POST {{catalog}}/books
+Content-Type: application/json
+
+{"title": "Чистая архитектура", "author": "Мартин", "copies_total": 1}
+
+### Выдать книгу
+# @name createLoan
+POST {{loan}}/loans
+Content-Type: application/json
+
+{"reader_id": "{{createReader.response.body.$.id}}", "book_id": "{{createBook.response.body.$.id}}"}
+
+### Повторная выдача того же экземпляра (ожидаем 409)
+POST {{loan}}/loans
+Content-Type: application/json
+
+{"reader_id": "{{createReader.response.body.$.id}}", "book_id": "{{createBook.response.body.$.id}}"}
+
+### Заблокировать читателя
+PATCH {{reader}}/readers/{{createReader.response.body.$.id}}
+Content-Type: application/json
+
+{"status": "blocked"}
+
+### Активные выдачи читателя
+GET {{loan}}/loans?reader_id={{createReader.response.body.$.id}}&status=active
+
+### Вернуть книгу
+POST {{loan}}/loans/{{createLoan.response.body.$.id}}/return
+
+### Уведомления
+GET {{notify}}/notifications
+
+### Состояние фонда
+GET {{catalog}}/books/{{createBook.response.body.$.id}}
