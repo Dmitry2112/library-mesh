@@ -1,0 +1,16 @@
+{
+  "name": "library-mesh",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "up": "docker compose up -d --build --wait",
+    "down": "docker compose down",
+    "test": "node --test tests/api.test.ts",
+    "demo:failure": "node scripts/failure-demo.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}
