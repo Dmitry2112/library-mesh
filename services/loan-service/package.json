@@ -1,0 +1,9 @@
+{
+  "name": "loan-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.ts",
+    "dev": "node --watch --env-file=.env src/app.ts"
+  }
+}
